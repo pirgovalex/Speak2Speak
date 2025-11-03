@@ -24,22 +24,20 @@ def get_files():
     raise FileNotFoundError("FAISS folder not found.")
 
 
-def hybrid_search():
+def hybrid_search(q:str):
     folder = get_files()
     pages = get_pdf()
     embedding = HuggingFaceEmbeddings(model_name="iris49/3gpp-embedding-model-v0")
     faiss_db = FAISS.load_local(folder, embeddings=embedding,allow_dangerous_deserialization=True)
     splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=80)
     docs = splitter.split_documents(pages)
-    faiss_retriever = faiss_db.as_retriever(search_type="similarity", search_kwargs={"k": 8})
+    faiss_retriever = faiss_db.as_retriever(search_type="similarity", search_kwargs={"k": 2})
     bm25_retriever = BM25Retriever.from_documents(docs)
     bm25_retriever.k = 8
 
     ensemble = EnsembleRetriever(retrievers=[faiss_retriever, bm25_retriever],weights=[0.5,0.6])
 
-    q = "What artery supplies blood to the leg?"
+
     result = ensemble.get_relevant_documents(q)
-    print(result)
     return result
 
-hybrid_search()
