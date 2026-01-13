@@ -4,10 +4,18 @@ from LLM import llama_interact
 from tts import speak
 from  load_pdf import load_and_store_pdf
 import  threading
-import os
 
 def on_click():
-    threading.Thread(target=load_and_store_pdf, daemon=True).start()
+    def task():
+        btn_create_vector_db.config(text="Processing...", state="disabled", bg="gray")
+        try:
+            load_and_store_pdf()
+            btn_create_vector_db.config(text="SAVED", state="normal", bg="green")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to store PDF:\n{e}")
+            btn_create_vector_db.config(text="STORE PDF", state="normal", bg="maroon")
+            
+    threading.Thread(target=task, daemon=True).start()
 
 def ask_question():
     user_q = entry.get()
@@ -42,7 +50,8 @@ def speech_to_text():
 
     try:
         # Load model (first time = download)
-        model = whisper.load_model("tiny")  # fast, ~75MB
+        # CHANGED: 'tiny' -> 'base' for better accuracy and fewer hallucinations
+        model = whisper.load_model("base") 
 
         # Record
         audio, fs = record_audio(duration=6)
@@ -63,12 +72,19 @@ def speech_to_text():
         # Cleanup
         os.unlink(audio_path)
 
+        # Basic hallucination filter
+        # Whisper (especially smaller models) sometimes outputs "Subtitles by..." or "The Snow..." on silence.
+        hallucinations = ["Subtitles by", "The Snow", "Amara.org", "Community", "Copyright"]
+        if any(h.lower() in query.lower() for h in hallucinations):
+             print(f"Filtered hallucination: {query}")
+             query = ""
+
         if query:
             entry.delete(0, tk.END)
             entry.insert(0, query)
             print(f"You said: {query}")
         else:
-            messagebox.showwarning("No Speech", "Nothing was heard. Try again.")
+            messagebox.showwarning("No Speech", "Nothing was heard (or speech was filtered). Try again.")
 
     except Exception as e:
         messagebox.showerror("Error", f"Speech recognition failed:\n{str(e)}")
@@ -86,20 +102,21 @@ entry.grid(row=0, column=0, padx=5, pady=5)
 btn_ask = tk.Button(frame, text="Ask", command=ask_question)
 btn_ask.grid(row=0, column=1, padx=5)
 
-if "faiss_index" not in os.listdir():
+# if "faiss_index" not in os.listdir(): 
+# Always show the button so user can retry/update
 
-    btn_create_vector_db = tk.Button(frame,
-                                     text="STORE PDF",
-                                     bg="maroon",
-                                     fg="white",
-                                     activebackground="maroon",
-                                     activeforeground="gray",
-                                     font=("Segoe UI", 11, "bold"),
-                                     relief="raised",
-                                     bd=3,
-                                     command=on_click
-                                     )
-    btn_create_vector_db.grid(row=0, column=4, padx=5, pady=10,)
+btn_create_vector_db = tk.Button(frame,
+                                    text="STORE PDF",
+                                    bg="maroon",
+                                    fg="white",
+                                    activebackground="maroon",
+                                    activeforeground="gray",
+                                    font=("Segoe UI", 11, "bold"),
+                                    relief="raised",
+                                    bd=3,
+                                    command=on_click
+                                    )
+btn_create_vector_db.grid(row=0, column=4, padx=5, pady=10,)
 
 
 btn_speech = tk.Button(frame, text="Speak", command=speech_to_text)
