@@ -32,11 +32,11 @@ def hybrid_search(q:str):
     faiss_db = FAISS.load_local(folder, embeddings=embedding, allow_dangerous_deserialization=True)
     with open(f"{folder}/docs.pkl", "rb") as f:
         docs = pickle.load(f)
-    faiss_retriever = faiss_db.as_retriever(search_type="similarity", search_kwargs={"k": 6})
+    faiss_retriever = faiss_db.as_retriever(search_type="similarity", search_kwargs={"k": 10})
     bm25_retriever = BM25Retriever.from_documents(docs)
-    bm25_retriever.k = 6
+    bm25_retriever.k = 10
 
-    ensemble = EnsembleRetriever(retrievers=[faiss_retriever, bm25_retriever],weights=[0.1,0.9])
+    ensemble = EnsembleRetriever(retrievers=[faiss_retriever, bm25_retriever],weights=[0.3,0.7])
     print(faiss_db.embedding_function)
     result = ensemble.invoke(q)
     print("RELEVANT DOCUMENTS: ---------------------------------------------\n")

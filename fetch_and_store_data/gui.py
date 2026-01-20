@@ -18,12 +18,12 @@ def load_whisper_model():
     global whisper_model, model_status
     print("Loading Whisper model...")
     try:
-        # 'base' is a good balance. 'small' or 'medium' are better for medical terms but slower.
+        # 'base' is a good balance. 'medium' are better for medical terms but slower.
         whisper_model = whisper.load_model("base")
         model_status = "Ready"
         print("Whisper model loaded successfully.")
         # Update UI if root exists
-        if 'btn_speech' in globals():
+        if 'btn_speech' in globals(): # Check global vars.
              btn_speech.config(state='normal', text="Speak")
     except Exception as e:
         model_status = "Error loading speech model"
