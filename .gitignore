@@ -1,0 +1,4 @@
+*.db
+/venv
+/myvenv
+__pycache__/
