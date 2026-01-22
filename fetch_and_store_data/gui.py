@@ -11,6 +11,7 @@ import wave
 import tempfile
 import os
 import uuid
+#ODL GUI IMPLEMENTATION
 
 # --- Global Whisper Model ---
 whisper_model = None

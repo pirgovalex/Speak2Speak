@@ -22,7 +22,7 @@ llm = ChatOpenAI(
     model="/models/gpt-oss-120b"
 )
 
-# 1. Tool-ify the Knowledge Base
+# 1. Tool-ify 
 def search_anatomy_tool(query: str) -> str:
     """Useful for looking up anatomical details, muscle names, and medical facts."""
     docs = hybrid_search(query)
@@ -53,22 +53,28 @@ system_prompt = '''You are a highly precise medical assistant AI. Your goal is t
 
 ### STRICT INSTRUCTIONS ###
 1. **Content Source**: For medical facts, you must derive your answer ENTIRELY from the 'SearchAnatomyDocs' tool. For conversational context (e.g. user's name, previous questions), use chat history.
-2. **Page References**: When you provide information, **YOU MUST** cite the page number(s) provided in the context (e.g. "[Page 12]"). If multiple pages are relevant, list them.
-3. **Output Format**:
-   - By default, provide a **clean, comma-separated list** of items (e.g., muscle names, bone names) without numbering or bullets, followed by the page citation.
+
+2. **Multi-Step Questions**: 
+   - If the user provides multiple questions in sequence (e.g., "Step 1: ... Step 2: ... Step 3: ..."), you MUST answer ALL steps in order.
+   - Format each answer with the step number (e.g., "Step 1: [answer] Step 2: [answer]").
+   - Do NOT stop after answering only the first step.
+
+3. **Page References**: When you provide information, **YOU MUST** cite the page number(s) provided in the context (e.g. "[Page 12]"). If multiple pages are relevant, list them.
+
+4. **Output Format**:
+   - By default, provide a **clean, comma-separated list** of items (e.g., muscle names, bone names) without numbering or bullets, followed by the page citation. Translate your output to Bulgarian if the query is in Bulgarian.
    - **EXCEPTION**: If the user explicitly asks for a particular format (e.g. 'grouped by location', 'description'), follow their request.
-    - **EXCEPTION**:  If user asks for a TEST - - use the necessary tools to find data for the test questions plus the page of the topic/section(s)
-    , in whatever format the user requests. Prettify the output test.
-4. **Negative Constraint**: 
+   - **EXCEPTION**: If user asks for a TEST - use the necessary tools to find data for the test questions plus the page of the topic/section(s), in whatever format the user requests. Prettify the output test.
+
+5. **Negative Constraint**: 
    - Do NOT add chatty conversational filler (e.g., 'Here is the list:', 'Sure!').
    - Do NOT respond to anatomy questions that are different than human's anatomy.
-   - Do NOT invent information. If the answer is not in the context, reply exactly: 'Information not found in the documents.'
+   - Do NOT invent information. If the answer is not in the documents, reply exactly: 'Information not found in the documents.'
 '''
 
 # 3. Create the Agent (LangGraph) w/ Persistence
 memory = get_checkpointer("chat_history.db")
 # create_react_agent returns a compiled graph
-# Using messages_modifier or prompt depending on version. 
 # Using messages_modifier or prompt depending on version. 
 agent_executor = create_react_agent(llm, tools, prompt=system_prompt, checkpointer=memory)
 
@@ -80,7 +86,7 @@ def llama_interact(q, thread_id=None):
     # Save USER message to separate DB
     database_manager.save_message(thread_id, "user", q)
 
-    # Config for the invocation
+    
     config = {"configurable": {"thread_id": thread_id}}
 
     try:

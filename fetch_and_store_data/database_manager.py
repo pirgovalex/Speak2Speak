@@ -57,6 +57,26 @@ def save_message(thread_id, sender, content, db_path=None):
     conn.commit()
     conn.close()
 
+def delete_thread(thread_id, db_path=None):
+    """Deletes a thread and all its messages."""
+    if db_path is None:
+        db_path = DB_PATH
+        
+    conn = sqlite3.connect(db_path, check_same_thread=False)
+    cursor = conn.cursor()
+    
+    try:
+        # Delete messages first due to foreign key (though sqlite enforce off by default often)
+        cursor.execute("DELETE FROM messages WHERE thread_id = ?", (thread_id,))
+        cursor.execute("DELETE FROM threads WHERE id = ?", (thread_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error deleting thread {thread_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
 def get_chat_history(thread_id, db_path=None):
     """Retrieves all messages for a given thread."""
     if db_path is None:
