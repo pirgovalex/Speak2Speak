@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import scrolledtext, messagebox
 from LLM import llama_interact
 from tts import speak
+from faster_whisper import WhisperModel
 from  load_pdf import load_and_store_pdf
 import  threading
 import os
@@ -27,51 +28,36 @@ def ask_question():
     threading.Thread(target=worker,daemon=True).start()
 
 def speech_to_text():
-    import whisper
     import sounddevice as sd
-    import wave
-    import tempfile
-    import os
+    duration = 6
+    fs = 48000
+    device= 12
+    messagebox.showinfo("Recording", f"Speak now... ({duration} seconds)")
 
-    def record_audio(duration=5, fs=16000):
-        messagebox.showinfo("Recording", f"Speak now... ({duration} seconds)")
-        print("Recording...")
-        recording = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='int16')
+    def record_and_transcribe():
+        # record audio
+        audio = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype='float32',device=device)
         sd.wait()
-        return recording, fs
 
-    try:
-        # Load model (first time = download)
-        model = whisper.load_model("tiny")  # fast, ~75MB
+        # transcribe audio
+        model = WhisperModel("tiny.en")
+        segments, info = model.transcribe(audio, language="en")
 
-        # Record
-        audio, fs = record_audio(duration=6)
+        text = " ".join(segment.text for segment in segments).strip()
 
-        # Save to temp file
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-            with wave.open(f.name, 'w') as wf:
-                wf.setnchannels(1)
-                wf.setsampwidth(2)
-                wf.setframerate(fs)
-                wf.writeframes(audio.tobytes())
-            audio_path = f.name
-
-        # Transcribe
-        result = model.transcribe(audio_path, language="en", fp16=False)
-        query = result["text"].strip()
-
-        # Cleanup
-        os.unlink(audio_path)
-
-        if query:
-            entry.delete(0, tk.END)
-            entry.insert(0, query)
-            print(f"You said: {query}")
+        # update gui
+        if text:
+            def update_entry():
+                entry.delete(0, tk.END)
+                entry.insert(0, text)
+            entry.after(0, update_entry)
         else:
-            messagebox.showwarning("No Speech", "Nothing was heard. Try again.")
+            def show_warning():
+                messagebox.showwarning("No Speech", "Nothing was heard. Try again.")
+            entry.after(0, show_warning)
 
-    except Exception as e:
-        messagebox.showerror("Error", f"Speech recognition failed:\n{str(e)}")
+    # start thread
+    threading.Thread(target=record_and_transcribe, daemon=True).start()
 
 # GUI
 root = tk.Tk()

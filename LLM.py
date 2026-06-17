@@ -1,15 +1,21 @@
 import torch
-from transformers  import AutoTokenizer
+from transformers import AutoTokenizer, BitsAndBytesConfig
 from transformers import pipeline
 from hybrid_search import hybrid_search
 
 model_id = "mistralai/Mistral-7B-Instruct-v0.3"
 
+# setup bnb config
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
+
 pipe = pipeline(
     "text-generation",
     model=model_id,
-    dtype=torch.bfloat16,
     device_map="auto",
+    model_kwargs={"quantization_config": bnb_config},
     max_new_tokens=60,
 )
 
@@ -24,7 +30,7 @@ def clean_output(text):
     return ', '.join(unique_items)
 
 def llama_interact(q):
-#mistral BIBLE
+# mistral bible
     prime_text = (
     "You are a medical assistant. "
     "RULES (MUST FOLLOW EXACTLY):\n"

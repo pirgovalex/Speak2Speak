@@ -1,0 +1,6 @@
+.venv/
+.idea/
+__pycache__/
+faiss_index/
+*.pdf
+.pytest_cache/

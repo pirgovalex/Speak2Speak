@@ -1,2 +1,2 @@
-import whisper
-model = whisper.load_model("tiny")
+import sounddevice as sd
+print(sd.query_devices())
