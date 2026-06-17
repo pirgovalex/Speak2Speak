@@ -22,7 +22,7 @@ def load_and_store_pdf()-> None:
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=120,
                                               separators=["\n\n", "\n", ".", " ", ""])
     docs = splitter.split_documents(pages)
-    model = SentenceTransformerEmbeddings(model_name="iris49/3gpp-embedding-model-v0")
+    model = SentenceTransformerEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     with open("faiss_index/docs.pkl", "wb") as f:
         pickle.dump(docs, f)
     vector_db = FAISS.from_documents(docs, model)
