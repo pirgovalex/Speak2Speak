@@ -1,0 +1,167 @@
+/* =====================================================
+   DocGraph UI — Global Theme System
+   CSS Custom Properties for Dark/Light theme switching
+   Sharp-edged, muted, professional medical design
+   ===================================================== */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Dark Theme (DEFAULT) ──────────────────────────── */
+:root {
+  --color-bg-primary: #111111;
+  --color-bg-secondary: #1A1A1A;
+  --color-bg-card: #1C1C1C;
+  --color-text-primary: #E8E8E8;
+  --color-text-secondary: #A0A0A0;
+  --color-text-muted: #666666;
+  --color-border: #2A2A2A;
+  --color-accent: #5A7A9A;
+  --color-accent-hover: #4A6A8A;
+  --color-accent-subtle: #1A2535;
+  --color-user-bubble: #1E2D3D;
+  --color-user-bubble-text: #D0E4F0;
+  --color-ai-bubble: #1C1C1C;
+  --color-ai-bubble-text: #DCDCDC;
+  --color-success: #4A8C6A;
+  --color-warning: #8C7A3A;
+  --color-error: #8C3A3A;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* ─── Light Theme ────────────────────────────────────── */
+.light {
+  --color-bg-primary: #F5F5F5;
+  --color-bg-secondary: #FFFFFF;
+  --color-bg-card: #FFFFFF;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #555555;
+  --color-text-muted: #999999;
+  --color-border: #E0E0E0;
+  --color-accent: #4A6A8A;
+  --color-accent-hover: #3A5A7A;
+  --color-accent-subtle: #E8F0F7;
+  --color-user-bubble: #E8F0F7;
+  --color-user-bubble-text: #1A2A3A;
+  --color-ai-bubble: #F0F0F0;
+  --color-ai-bubble-text: #1A1A1A;
+  --color-success: #3A7A5A;
+  --color-warning: #7A6A2A;
+  --color-error: #7A2A2A;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* ─── Reset & Base ───────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  min-height: 100vh;
+}
+
+/* ─── Scrollbar Theming ──────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ─── Utility Classes ────────────────────────────────── */
+@layer components {
+  /* Sharp-edged card */
+  .card {
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 0;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Sharp input style */
+  .input-base {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    color: var(--color-text-primary);
+    font-family: inherit;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    transition: border-color 0.15s ease;
+    outline: none;
+  }
+
+  .input-base:focus {
+    border-color: var(--color-accent);
+  }
+
+  /* Sharp button */
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-user-bubble-text);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-accent-hover);
+  }
+
+  /* Chat bubbles */
+  .bubble-user {
+    background-color: var(--color-user-bubble);
+    color: var(--color-user-bubble-text);
+    border-radius: 2px;
+    padding: 0.625rem 0.875rem;
+  }
+
+  .bubble-ai {
+    background-color: var(--color-ai-bubble);
+    color: var(--color-ai-bubble-text);
+    border-radius: 2px;
+    border: 1px solid var(--color-border);
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+/* ─── Selection Color ────────────────────────────────── */
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-user-bubble-text);
+}
