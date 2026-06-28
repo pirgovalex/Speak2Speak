@@ -7,6 +7,10 @@ const isTest = process.env.VITEST === 'true' || process.env.NODE_ENV === 'test';
 
 export default defineConfig({
   plugins: isTest ? [] : [solidPlugin()],
+  resolve: {
+    // .jsx intentionally excluded - this is a typescript-only project
+    extensions: ['.tsx', '.ts', '.js'],
+  },
   server: {
     port: 3000,
   },

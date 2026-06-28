@@ -7,10 +7,6 @@ dist-ssr
 # local planning - not tracked
 TODO.md
 
-# prevent agent-generated js duplicates alongside tsx source files
-src/**/*.jsx
-src/**/*.js
-
 # environment secrets - never commit
 .env
 .env.local
