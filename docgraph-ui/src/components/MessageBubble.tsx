@@ -43,7 +43,7 @@ const MessageBubble: Component<Props> = (props) => {
         'border-left': !isUser() ? '2px solid var(--color-accent)' : 'none',
         'word-break': 'break-word',
       }}>
-        {/* textContent, NOT innerHTML — XSS prevention */}
+        {/* textContent, NOT innerHTML - XSS prevention */}
         <p style={{ margin: '0', 'white-space': 'pre-wrap' }}>{props.message.content}</p>
         <span style={{
           display: 'block',

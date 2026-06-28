@@ -3,21 +3,29 @@ import Header from './components/Header';
 import ChatView from './components/ChatView';
 import QueryInput from './components/QueryInput';
 import { addMessage, setIsLoading, setError } from './stores/chatStore';
+import { askQuestion } from './services/queryService';
 
-const handleQuery = async (query: string) => {
+const handleQuery = async (query: string): Promise<void> => {
+  // Add the user's message to the chat immediately for perceived responsiveness -
+  // don't wait for the backend to acknowledge before showing it in the thread
   addMessage({ role: 'user', content: query });
   setIsLoading(true);
   setError(null);
 
+  console.log('[DocGraph App] Submitting query:', query);
+
   try {
-    // Placeholder — Phase 3 will wire Axios here
-    await new Promise<void>(r => setTimeout(r, 1200));
-    addMessage({
-      role: 'assistant',
-      content: '[Phase 3 will connect this to the Mistral-7B backend via Axios]',
-    });
-  } catch {
-    setError('Failed to reach the backend.');
+    const result = await askQuestion(query);
+
+    // Display the LLM's answer in the chat thread
+    addMessage({ role: 'assistant', content: result.answer });
+
+    console.log('[DocGraph App] Answer received. Citations:', result.sources);
+    // TODO: Phase 4 - forward result.sources to the PDF viewer panel
+    // so the relevant pages are highlighted alongside the answer
+  } catch (queryError) {
+    console.error('[DocGraph App] Query error:', queryError);
+    setError('Failed to reach the backend. Is the server running?');
   } finally {
     setIsLoading(false);
   }

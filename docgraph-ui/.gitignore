@@ -4,9 +4,13 @@ dist-ssr
 *.local
 .DS_Store
 
-# Local planning — not tracked
+# local planning - not tracked
 TODO.md
 
-# Prevent agent-generated JS duplicates alongside TSX source files
+# prevent agent-generated js duplicates alongside tsx source files
 src/**/*.jsx
 src/**/*.js
+
+# environment secrets - never commit
+.env
+.env.local

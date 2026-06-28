@@ -45,7 +45,7 @@ const Header: Component = () => (
         transition: 'border-color 0.15s ease',
       }}
     >
-      {theme() === 'dark' ? '☀ Light' : '● Dark'}
+      {theme() === 'dark' ? '☀ Light' : '�-� Dark'}
     </button>
   </header>
 );
