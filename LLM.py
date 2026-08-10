@@ -19,6 +19,9 @@ pipe = pipeline(
     max_new_tokens=60,
 )
 
+# Load tokenizer once at module level, not on every call
+hf_tokenizer = AutoTokenizer.from_pretrained(model_id)
+
 def clean_output(text):
     items = [m.strip() for m in text.split(',')]
     seen = set()
@@ -45,7 +48,6 @@ def llama_interact(q):
     docs = hybrid_search(q)
     context = ("\n".join([doc.page_content for doc in docs]))
     full_prompt = prime_text + context + "\n\nUser Question: " + q
-    hf_tokenizer = AutoTokenizer.from_pretrained(model_id)
     output = pipe(full_prompt,
               max_new_tokens = 400,
               do_sample= True,
