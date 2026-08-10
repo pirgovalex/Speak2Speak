@@ -1,4 +1,5 @@
 import type { Component } from 'solid-js';
+import { ErrorBoundary } from 'solid-js';
 import Header from './components/Header';
 import ChatView from './components/ChatView';
 import QueryInput from './components/QueryInput';
@@ -32,32 +33,62 @@ const handleQuery = async (query: string): Promise<void> => {
 };
 
 const App: Component = () => (
-  <div style={{
-    'background-color': 'var(--color-bg-primary)',
-    color: 'var(--color-text-primary)',
-    'min-height': '100vh',
-    height: '100vh',
-    display: 'flex',
-    'flex-direction': 'column',
-    transition: 'background-color 0.25s ease, color 0.25s ease',
-    'font-family': "'Inter', system-ui, sans-serif",
-    overflow: 'hidden',
-  }}>
-    <Header />
+  <ErrorBoundary fallback={(err: Error) => (
     <div style={{
-      flex: '1',
       display: 'flex',
       'flex-direction': 'column',
-      width: '100%',
-      'max-width': '800px',
-      margin: '0 auto',
-      'min-height': '0',
-      'box-sizing': 'border-box',
+      'align-items': 'center',
+      'justify-content': 'center',
+      'min-height': '100vh',
+      'font-family': "'Inter', system-ui, sans-serif",
+      color: '#c4c4c4',
+      background: '#111',
+      gap: '1rem',
+      padding: '2rem',
     }}>
-      <ChatView />
-      <QueryInput onSubmit={handleQuery} />
+      <span style={{ 'font-size': '2rem' }}>⚠</span>
+      <p style={{ margin: '0', 'font-size': '0.9rem' }}>Something went wrong: {err.message}</p>
+      <button
+        onClick={() => window.location.reload()}
+        style={{
+          background: '#333',
+          border: '1px solid #555',
+          color: '#ccc',
+          padding: '0.5rem 1.5rem',
+          'border-radius': '2px',
+          cursor: 'pointer',
+          'font-size': '0.85rem',
+        }}
+      >Reload</button>
     </div>
-  </div>
+  )}>
+    <div style={{
+      'background-color': 'var(--color-bg-primary)',
+      color: 'var(--color-text-primary)',
+      'min-height': '100vh',
+      height: '100vh',
+      display: 'flex',
+      'flex-direction': 'column',
+      transition: 'background-color 0.25s ease, color 0.25s ease',
+      'font-family': "'Inter', system-ui, sans-serif",
+      overflow: 'hidden',
+    }}>
+      <Header />
+      <div style={{
+        flex: '1',
+        display: 'flex',
+        'flex-direction': 'column',
+        width: '100%',
+        'max-width': '800px',
+        margin: '0 auto',
+        'min-height': '0',
+        'box-sizing': 'border-box',
+      }}>
+        <ChatView />
+        <QueryInput onSubmit={handleQuery} />
+      </div>
+    </div>
+  </ErrorBoundary>
 );
 
 export default App;
