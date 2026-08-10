@@ -6,3 +6,8 @@ faiss_index/
 .pytest_cache/
 .env
 .env.local
+TODO.md
+*.db
+*.db-shm
+*.db-wal
+node_modules/
