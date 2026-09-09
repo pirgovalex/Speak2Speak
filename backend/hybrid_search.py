@@ -10,13 +10,13 @@ from sentence_transformers import CrossEncoder
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FAISS_DIR = os.path.join(BASE_DIR, "..", "data", "faiss_index")
 
 def _get_folder() -> str:
-    possible_paths = ["faiss_index", "../faiss_index", "../../faiss_index"]
-    for path in possible_paths:
-        if os.path.isdir(path):
-            return path
-    raise FileNotFoundError("faiss folder not found")
+    if os.path.isdir(FAISS_DIR):
+        return FAISS_DIR
+    raise FileNotFoundError("faiss folder not found at " + FAISS_DIR)
 
 
 _folder = _get_folder()
