@@ -1,52 +1,65 @@
 import pickle
+import os
+import torch
 
 from langchain_community.vectorstores import FAISS
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.retrievers import BM25Retriever
 from langchain.retrievers import EnsembleRetriever
-import os
-from load_pdf import get_pdf
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from sentence_transformers import CrossEncoder
 
-DATABASE = "faiss_index"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-def get_files()-> None:
+
+def _get_folder() -> str:
     possible_paths = ["faiss_index", "../faiss_index", "../../faiss_index"]
     for path in possible_paths:
         if os.path.isdir(path):
             return path
-    raise FileNotFoundError("FAISS folder not found.")
+    raise FileNotFoundError("faiss folder not found")
 
 
-def hybrid_search(q:str):
-    folder = get_files()
-    embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    faiss_db = FAISS.load_local(folder, embeddings=embedding,allow_dangerous_deserialization=True)
-    with open("faiss_index/docs.pkl", "rb") as f:
-        docs = pickle.load(f)
-    faiss_retriever = faiss_db.as_retriever(search_type="similarity", search_kwargs={"k": 20})
-    bm25_retriever = BM25Retriever.from_documents(docs)
-    bm25_retriever.k = 20
+_folder = _get_folder()
 
-    ensemble = EnsembleRetriever(retrievers=[faiss_retriever, bm25_retriever],weights=[0.5,0.5])
-    print(faiss_db.embedding_function)
+# remind: if the faiss index is rebuilt at runtime (e.g. new pdf uploaded),
+# the server needs to restart for these module-level caches to reflect it
+_embedding = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2",
+    model_kwargs={"device": DEVICE},
+    encode_kwargs={"normalize_embeddings": True},
+)
+
+_faiss_db = FAISS.load_local(
+    _folder,
+    embeddings=_embedding,
+    allow_dangerous_deserialization=True,
+)
+
+with open(os.path.join(_folder, "docs.pkl"), "rb") as f:
+    _docs = pickle.load(f)
+
+_bm25_retriever = BM25Retriever.from_documents(_docs)
+_bm25_retriever.k = 20
+
+_cross_encoder = CrossEncoder("BAAI/bge-reranker-base", device=DEVICE)
+
+print(f"[hybrid_search] initialized on {DEVICE}")
+
+
+def hybrid_search(q: str):
+    faiss_retriever = _faiss_db.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 20},
+    )
+    ensemble = EnsembleRetriever(
+        retrievers=[faiss_retriever, _bm25_retriever],
+        weights=[0.5, 0.5],
+    )
     result = ensemble.get_relevant_documents(q)
 
-    # rerank results with cross encoder
-    from sentence_transformers import CrossEncoder
-    model = CrossEncoder("BAAI/bge-reranker-base")
+    # rerank with cross encoder
     pairs = [[q, doc.page_content] for doc in result]
-    scores = model.predict(pairs)
+    scores = _cross_encoder.predict(pairs)
 
-    # sort by score and get top 5
-    scored_docs = list(zip(result, scores))
-    scored_docs.sort(key=lambda x: x[1], reverse=True)
-    result = [doc for doc, score in scored_docs][:5]
-
-    print("RELEVANT DOCUMENTS: ---------------------------------------------\n")
-    print(result)
-    print("END: ---------------------------------------------\n")
-    return result
-
-
+    scored_docs = sorted(zip(result, scores), key=lambda x: x[1], reverse=True)
+    return [doc for doc, _ in scored_docs][:5]
